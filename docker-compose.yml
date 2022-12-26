@@ -1,0 +1,19 @@
+
+version: "3.7"
+
+services:
+        web:
+                build: web
+                ports:
+                        - 5555:5555
+                volumes:
+                        - ./web/app:/app
+                environment:
+                        - FLASK_DEBUG=${FLASK_DEBUG}
+                        - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+                        - GITHUB_SECRET=${GITHUB_SECRET}
+                command: "/home/user/.local/bin/flask run --host=0.0.0.0 --port 5555"
+
+                restart: unless-stopped
+
+
