@@ -24,6 +24,13 @@ from fastapi import FastAPI, Header, Request
 from hmac import HMAC, compare_digest
 from hashlib import sha256
 import requests
+from enum import auto
+from fastapi_utils.enums import StrEnum
+
+
+class Mode(StrEnum):
+    link = auto()
+    fulltext = auto()
 
 
 def verify_signature(x_hub_signature_256, body):
@@ -35,7 +42,7 @@ def verify_signature(x_hub_signature_256, body):
 app = FastAPI()
 
 @app.post('/discord/{mode}')
-async def webhook(mode, request: Request, x_hub_signature_256: Union[str, None] = Header(default=None)):
+async def webhook(mode:Mode, request: Request, x_hub_signature_256: Union[str, None] = Header(default=None)):
 
 	if not verify_signature(x_hub_signature_256, memoryview(await request.body())):
 		return 'Forbidden', 403
