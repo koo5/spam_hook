@@ -26,7 +26,7 @@ import requests
 
 
 def verify_signature(req):
-	received_sign = req.headers.get('X-Hub-Signature-256').split('sha256=')[-1].strip()
+	received_sign = req.headers.get('X_Hub_Signature_256').split('sha256=')[-1].strip()
 	expected_sign = HMAC(key=github_secret.encode(), msg=req.data, digestmod=sha256).hexdigest()
 	return compare_digest(received_sign, expected_sign)
 
