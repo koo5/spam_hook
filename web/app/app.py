@@ -19,26 +19,27 @@ discord_webhook_url =  os.environ['DISCORD_WEBHOOK_URL']
 github_secret = os.environ['GITHUB_SECRET']
 
 
-from flask import Flask, request
+from typing import Union
+from fastapi import FastAPI, Header, Request
 from hmac import HMAC, compare_digest
 from hashlib import sha256
 import requests
 
 
-def verify_signature(req):
-	received_sign = req.headers.get('X_Hub_Signature_256').split('sha256=')[-1].strip()
-	expected_sign = HMAC(key=github_secret.encode(), msg=req.data, digestmod=sha256).hexdigest()
+def verify_signature(x_hub_signature_256, body):
+	received_sign = x_hub_signature_256.split('sha256=')[-1].strip()
+	expected_sign = HMAC(key=github_secret.encode(), msg=body, digestmod=sha256).hexdigest()
 	return compare_digest(received_sign, expected_sign)
 
 
-app = Flask(__name__)
+app = FastAPI()
 
-@app.route('/discord/<mode>', methods=['POST'])
-def webhook(mode):
-	if not verify_signature(request):
+@app.post('/discord/{mode}')
+async def webhook(mode, request: Request, x_hub_signature_256: Union[str, None] = Header(default=None)):
+
+	if not verify_signature(x_hub_signature_256, memoryview(await request.body())):
 		return 'Forbidden', 403
-	#if urlencoded: #print(request.get_data())
-	r = request.get_json()
+	r = await request.json()
 	print(r)
 	
 	pushed_commits_diff_url = r['compare'] # || die
