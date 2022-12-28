@@ -12,7 +12,8 @@ services:
                         - FLASK_DEBUG=${FLASK_DEBUG}
                         - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
                         - GITHUB_SECRET=${GITHUB_SECRET}
-                command: "/home/user/.local/bin/flask run --host=0.0.0.0 --port 5555"
+#                command: "/home/user/.local/bin/flask run --host=0.0.0.0 --port 5555"
+                command: "uvicorn app:app --host=0.0.0.0 --port 5555"
 
                 restart: unless-stopped
 
