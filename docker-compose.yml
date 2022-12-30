@@ -9,11 +9,25 @@ services:
                 volumes:
                         - ./web/app:/app
                 environment:
-                        - FLASK_DEBUG=${FLASK_DEBUG}
                         - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
                         - GITHUB_SECRET=${GITHUB_SECRET}
+                        - SENTRY_DSN=${SENTRY_DSN}
+                        - ENABLE_METRICS=${ENABLE_METRICS}
                 command: gunicorn -b 0.0.0.0 -w 1 -k uvicorn.workers.UvicornWorker --access-logfile=-  app:app
 
                 restart: unless-stopped
 
 
+
+        prometheus:
+                image: prom/prometheus:v2.30.3
+                ports:
+                     - 9090:9090
+                volumes:
+                     - ./prometheus:/etc/prometheus
+                     - prometheus-data:/prometheus
+                command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yml
+
+
+volumes:
+      prometheus-data:

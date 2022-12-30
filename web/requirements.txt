@@ -3,3 +3,5 @@ requests
 gunicorn
 uvicorn
 fastapi-utils
+sentry-sdk[fastapi]
+prometheus-fastapi-instrumentator
