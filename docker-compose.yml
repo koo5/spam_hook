@@ -9,12 +9,14 @@ services:
                 volumes:
                         - ./web/app:/app
                 environment:
-                        - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
-                        - GITHUB_SECRET=${GITHUB_SECRET}
-                        - SENTRY_DSN=${SENTRY_DSN}
+#                        - SENTRY_DSN=${SENTRY_DSN}
                         - ENABLE_METRICS=${ENABLE_METRICS}
                 command: gunicorn -b 0.0.0.0 -w 1 -k uvicorn.workers.UvicornWorker --access-logfile=-  app:app
-
+                secrets:
+                 - DISCORD_WEBHOOK_URL
+                 - GITHUB_SECRET
+                 - SENTRY_DSN
+                 - SPAM_SECRET
                 restart: unless-stopped
 
 
@@ -31,3 +33,17 @@ services:
 
 volumes:
       prometheus-data:
+
+
+
+secrets:
+ DISCORD_WEBHOOK_URL:
+  file: secrets/DISCORD_WEBHOOK_URL
+ GITHUB_SECRET:
+  file: secrets/GITHUB_SECRET
+ SENTRY_DSN:
+  file: secrets/SENTRY_DSN
+ SPAM_SECRET:
+  file: secrets/SPAM_SECRET
+
+
