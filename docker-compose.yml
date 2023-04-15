@@ -11,7 +11,7 @@ services:
                 environment:
 #                        - SENTRY_DSN=${SENTRY_DSN}
                         - ENABLE_METRICS=${ENABLE_METRICS}
-                command: gunicorn -b 0.0.0.0 -w 1 -k uvicorn.workers.UvicornWorker --access-logfile=-  app:app
+                command: gunicorn -b 0.0.0.0 -w 1 -k uvicorn.workers.UvicornWorker --access-logfile=- --error-logfile=- --log-level debug --reload app:app
                 secrets:
                  - DISCORD_WEBHOOK_URL
                  - GITHUB_SECRET

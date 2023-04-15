@@ -24,7 +24,7 @@ from hashlib import sha256
 import requests, json
 from enum import auto
 from fastapi_utils.enums import StrEnum
-import os
+import os, logging
 
 
 def secret(name):
@@ -38,19 +38,28 @@ class Mode(StrEnum):
 	fulltext = auto()
 
 
+
+
+
+
+
 # really curious if this will work
-os.environ['SENTRY_DSN'] = secret('SENTRY_DSN')
-import sentry_sdk
+#os.environ['SENTRY_DSN'] = secret('SENTRY_DSN')
+#import sentry_sdk
+#sentry_sdk.init(
+#	traces_sample_rate=1.0,
+#)
 
 
-sentry_sdk.init(
-	traces_sample_rate=1.0,
-)
 
 
-app = FastAPI()
 
 
+
+app = FastAPI(debug=True)
+
+#gunicorn_logger = logging.getLogger('gunicorn.error')
+#app.logger.handlers = gunicorn_logger.handlers
 
 from prometheus_fastapi_instrumentator import Instrumentator, metrics
 
@@ -85,22 +94,32 @@ async def webhook(mode:Mode, request: Request, x_hub_signature_256: Union[str, N
 	r = await request.json()
 	print(json.dumps(r, sort_keys=True, indent=4))
 	
-	pushed_commits_diff_url = r['compare'] # || die
-	
-	message = '<' + pushed_commits_diff_url + '>'
-	if mode == 'fulltext':
-		message += '\n```' + requests.get(pushed_commits_diff_url + '.diff').text + '```'
+	pushed_commits_diff_url = r['compare'] # || die	
+	message = '\n'#'<' + pushed_commits_diff_url + '>'
+
+	if True:#mode == 'fulltext':
+		diff = requests.get(pushed_commits_diff_url + '.diff').text
+		diff2 = '\n'.join([l for l in diff.splitlines() if (l.startswith('-') or l.startswith('+'))])
+		msgs = '\n'.join(['<'+c['url']+'>' + '\n' + c['message'] for c in r['commits']])
+		message += '\n' + msgs + '\n\n```' + diff2 + '```'
+
 	print(f'sending: {message}')
 	send_message(message)
 	return 'OK'
 
 
-@app.get('/spam/{secret_token}/{message}')
+@app.get('/spam/{secret_token}/{message:path}')
 async def webhook(secret_token: str, message: str):
+#	print((secret('SPAM_SECRET'), secret_token))
 	if secret('SPAM_SECRET') == secret_token:
 		print(f'sending: {message}')
 		send_message(message)
 		return 'OK'
+
+@app.get('/spam2/{message:path}')
+async def webhook2(message: str):
+	print(f'{message}')
+	return 'OK'
 
 
 @app.get("/sentry-debug")
